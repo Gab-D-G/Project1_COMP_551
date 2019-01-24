@@ -2,6 +2,7 @@ import os
 os.chdir('/home/gabriel/Desktop/comp551/project1')
 import numpy as np
 import json
+import pickle
 with open("data/proj1_data.json") as fp:
     data = json.load(fp)
 
@@ -13,6 +14,22 @@ with open("data/proj1_data.json") as fp:
 # controversiality : a score for how "controversial" this comment is (automatically computed by Reddit)
 # is_root : if True, then this comment is a direct reply to a post; if False, this is a direct reply to another comment 
 
+
+'''
+Define the functions.
+'''
+def count_top_words(string,top_words):
+    words=parse_text(string)
+    word_counts=np.zeros(len(top_words))
+    i=0
+    for target_word in top_words:
+        count=0
+        for word in words:
+            if word==target_word:
+                count+=1
+        word_counts[i]=count
+        i+=1
+    return word_counts
 
 
 def parse_text(string):
@@ -33,6 +50,10 @@ def parse_text(string):
         
     return words
 
+
+'''
+Create a list of the top most occuring words in the comments. 
+'''
 #stack all the words from the training data (first 10000 samples) in a single list
 full_word_list=[]
 for i in range(10000):
@@ -62,7 +83,6 @@ for target_word in full_word_list:
     print(c)
     c+=1
 
-import pickle
 pickle.dump(counted_words,open('counted_words.txt','wb'))
 pickle.dump(word_occurences,open('word_occurences','wb'))
 
@@ -93,23 +113,14 @@ for target_word in counted_words:
     
 pickle.dump(top_words,open('top_words.txt','wb'))
 pickle.dump(top_occurences,open('top_occurences','wb'))
-top_words=pickle.load(open('top_words.txt','rb'))
-top_occurences=pickle.load(open('top_occurences','rb'))
 
-def count_top_words(string,top_words):
-    words=parse_text(string)
-    word_counts=np.zeros(len(top_words))
-    i=0
-    for target_word in top_words:
-        count=0
-        for word in words:
-            if word==target_word:
-                count+=1
-        word_counts[i]=count
-        i+=1
-    return word_counts
-                
+
+'''
+Load data and the top 160 word list, then prepare the datasets to feed into
+the algorithm.
+'''               
         
+top_words=pickle.load(open('top_words.txt','rb'))
 
 #fill a numpy array with the scores in the first column, followed by the selected
     #features to feed to the model
