@@ -36,7 +36,6 @@ def count_top_words(string,top_words):
 
 #count the occurence of each word in the first 10000 comments
 for i in range(10000):
-    print(i)
     comment = data[i]['text']
     comment = comment.lower()
     words = comment.split(" ")
@@ -56,16 +55,17 @@ for i in range(160):
     word_count.pop(word)
     
 #build the dataset
-num_features= 164
+num_features= 160+5
 sorted_data=np.zeros([len(data),num_features])
 for i in range(len(data)):
     data_point = data[i]
     sorted_data[i,0]=data_point['popularity_score']
-    sorted_data[i,1]=data_point['children']
-    sorted_data[i,2]=data_point['controversiality']
-    sorted_data[i,3]=int(data_point['is_root']) 
+    sorted_data[i,1]=1 # the intercept is set up to values of 1
+    sorted_data[i,2]=data_point['children']
+    sorted_data[i,3]=data_point['controversiality']
+    sorted_data[i,4]=int(data_point['is_root']) 
     comment=data_point['text']
-    sorted_data[i,4:]=count_top_words(comment,top_words)
+    sorted_data[i,5:]=count_top_words(comment,top_words)
 
 #training dataset    
 X_train=sorted_data[:10000,1:]

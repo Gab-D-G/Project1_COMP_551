@@ -22,111 +22,120 @@ import time
 import preprocessing as pp
 
  #Initialize the data set 
-print("Initializing the datasets... ( 3 vs 63 vs 163 features)")
-X_3 = pp.X_train[:,:3]
-X_63 = pp.X_train[:,:63]
-X_163 = pp.X_train[:,:163]
+X_3 = pp.X_train[:,:4]
+X_63 = pp.X_train[:,:64]
+X_163 = pp.X_train[:,:164]
 
-X_valid_3 = pp.X_valid[:,:3]
-X_valid_63 = pp.X_valid[:,:63]
-X_valid_163 = pp.X_valid[:,:163]
+X_valid_3 = pp.X_valid[:,:4]
+X_valid_63 = pp.X_valid[:,:64]
+X_valid_163 = pp.X_valid[:,:164]
 
 Y = pp.Y_train
-Y = Y.reshape((10000, 1))
-
 Y_valid = pp.Y_valid
-Y_valid = Y_valid.reshape((1000, 1))
-
-#add a dummy feature
-dummy = np.zeros((10000, 1))
-dummy = dummy + 1.0000
-
-dummy_v = np.zeros((1000, 1))
-dummy_v = dummy_v + 1.0000
-
-X_3 = np.append(X_3, dummy, axis=1)
-X_63 = np.append(X_63, dummy, axis=1)
-X_163 = np.append(X_163, dummy, axis=1)
-
-X_valid_3 = np.append(X_valid_3, dummy_v, axis=1)
-X_valid_63 = np.append(X_valid_63, dummy_v, axis=1)
-X_valid_163 = np.append(X_valid_163, dummy_v, axis=1)
 
 ###LINEAR REGRESSION --- CLOSED-FORM SOLUTION
 
-###EXPERIMENT NUMBER 1 (RUNTIME)
+def closed_form(X,Y):    
+    return np.linalg.inv(X.transpose().dot(X)).dot(X.transpose()).dot(Y)
 
-start_time_closed = (time.time()) * 1000
+#compute coefficients (w)
 
-w_closed_3 = np.matmul(np.linalg.inv(np.matmul(np.transpose(X_3), X_3)), np.matmul(np.transpose(X_3), Y))
+w_closed_63 = closed_form(X_63,Y)
+w_closed_163 = closed_form(X_163,Y)
+
+###compute running time for features == 3
+start_time_closed = (time.time()) * 1000  
+  
+w_closed_3 = closed_form(X_3,Y)
 
 end_time_closed = (time.time()) * 1000
 time_closed = end_time_closed - start_time_closed
 print(time_closed)
 
-###EXPERIMENT NUMBER 2 (3 vs 63 vs 163 features)
-#compute coefficients (w)
-w_closed_3 = np.matmul(np.linalg.inv(np.matmul(np.transpose(X_3), X_3)), np.matmul(np.transpose(X_3), Y))
-w_closed_63 = np.matmul(np.linalg.inv(np.matmul(np.transpose(X_63), X_63)), np.matmul(np.transpose(X_63), Y))
-w_closed_163 = np.matmul(np.linalg.inv(np.matmul(np.transpose(X_163), X_163)), np.matmul(np.transpose(X_163), Y))
-
 #compute mean squared error (MSE) on training set
-MSE_closed_train_3 = np.matmul(np.transpose(np.subtract(Y,(np.matmul(X_3, w_closed_3)))),np.subtract(Y,(np.matmul(X_3, w_closed_3))))
-MSE_closed_train_3 = MSE_closed_train_3/10000.000
-
-MSE_closed_train_63 = np.matmul(np.transpose(np.subtract(Y,(np.matmul(X_63, w_closed_63)))),np.subtract(Y,(np.matmul(X_63, w_closed_63))))
-MSE_closed_train_63 = MSE_closed_train_63/10000.000
-
-MSE_closed_train_163 = np.matmul(np.transpose(np.subtract(Y,(np.matmul(X_163, w_closed_163)))),np.subtract(Y,(np.matmul(X_163, w_closed_163))))
-MSE_closed_train_163 = MSE_closed_train_163/10000.000
+MSE_closed_train_3=np.mean((Y-np.matmul(X_3, w_closed_3))**2)
+MSE_closed_train_63=np.mean((Y-np.matmul(X_63, w_closed_63))**2)
+MSE_closed_train_163=np.mean((Y-np.matmul(X_163, w_closed_163))**2)
 
 #compute mean squared error (MSE) on validation set
-MSE_closed_val_3 = np.matmul(np.transpose(np.subtract(Y_valid,(np.matmul(X_valid_3, w_closed_3)))),np.subtract(Y_valid,(np.matmul(X_valid_3, w_closed_3))))
-MSE_closed_val_3 = MSE_closed_val_3/1000.000
-
-MSE_closed_val_63 = np.matmul(np.transpose(np.subtract(Y_valid,(np.matmul(X_valid_63, w_closed_63)))),np.subtract(Y_valid,(np.matmul(X_valid_63, w_closed_63))))
-MSE_closed_val_63 = MSE_closed_val_63/1000.000
-
-MSE_closed_val_163 = np.matmul(np.transpose(np.subtract(Y_valid,(np.matmul(X_valid_163, w_closed_163)))),np.subtract(Y_valid,(np.matmul(X_valid_163, w_closed_163))))
-MSE_closed_val_163 = MSE_closed_val_163/1000.000
+MSE_closed_val_3=np.mean((Y_valid-np.matmul(X_valid_3, w_closed_3))**2)
+MSE_closed_val_63=np.mean((Y_valid-np.matmul(X_valid_63, w_closed_63))**2)
+MSE_closed_val_163=np.mean((Y_valid-np.matmul(X_valid_163, w_closed_163))**2)    
 
 ###LINEAR REGRESSION --- GRADIENT DESCENT
+def gradient_descent(X, Y, n_0 = 10**-5, epsilon = 10**-4, use_B=True):
+    ###Initial weights
+    w_descent = np.random.rand(np.size(X,1))
 
-###EXPERIMENT NUMBER 1 (RUNTIME)
+    #keep track of the error along the gradient descent
+    MSE_descent=[]
+    w_dif=[]
+    i = 1    
+    B=0
+    while True:    
+        #PRINT THE MSE for the current coefficients 
+        #(COMMENT OUT IF YOU WANT THE RUNNING TIME)
+        MSE=np.mean((Y-np.matmul(X, w_descent))**2)
+        print(MSE)
+        MSE_descent.append(MSE)
+        
+        alpha = n_0/((B+i)+1)
+        
+        #compute the new coefficients
+        w_descent2=w_descent-(2*alpha*(np.matmul(np.transpose(X).dot(X),w_descent)-np.transpose(X).dot(Y)))
+        dif=np.linalg.norm(w_descent - w_descent2)
+       
+        #(COMMENT OUR IF YOU WANT THE RUNNING TIME)
+        w_dif.append(dif)
+        
+        #stop when descent is completed
+        if dif < epsilon:
+            break
+        w_descent = w_descent2
+        i = i+1
 
-start_time_descent = (time.time()) * 1000
+        if use_B:
+            B += 1
+        
+    #(COMMENT OUT LAST 2 OUTPUTS IF YOU WANT THE RUNNING TIME)
+    return w_descent, np.asarray(MSE_descent), w_dif
 
-#Initial weights
-w_descent = np.zeros((4,1))
+'''
+Gradient-Descent Run-Time
+'''
 
-#Hyperparameters:
-n_0 = 0.0000065
-epsilon = 0.001
+'''
+start_time_descent_B = (time.time()) * 1000
 
-i = 1
+w_descent_B = gradient_descent(X_3, Y, n_0 = 10**-5, epsilon = 10**-4,use_B=True)
 
-while True:  
-    
-    #PRINT THE MSE for the current coefficients
-    #RSS_descent = np.matmul(np.transpose(np.subtract(Y,(np.matmul(X, w_descent)))),np.subtract(Y,(np.matmul(X, w_descent))))
-    #MSE_descent = RSS_descent/10000.000
-    #print(MSE_descent)
-    
-    alpha = n_0
-    
-    #compute the new coefficients
-    derived_RSS = 2 * np.subtract(np.matmul(np.matmul(np.transpose(X_3), X_3), w_descent), np.matmul(np.transpose(X_3), Y ))
-    w_descent2 = w_descent - (alpha * derived_RSS)
-    
-    #stop when descent is completed
-    if (np.linalg.norm((w_descent - w_descent2))) < epsilon:
-        break
-    w_descent = w_descent2
-    i = i+1
+end_time_descent_B = (time.time()) * 1000
+time_descent_B = end_time_descent_B - start_time_descent_B
+print(time_descent_B)
 
-end_time_descent = (time.time()) * 1000
-time_descent = end_time_descent - start_time_descent
-print(time_descent)
 
-RSS_descent = np.matmul(np.transpose(np.subtract(Y,(np.matmul(X_3, w_descent)))),np.subtract(Y,(np.matmul(X_3, w_descent))))
-MSE_descent = RSS_descent/10000.000
+start_time_descent_noB = (time.time()) * 1000
+
+w_descent_noB = gradient_descent(X_3, Y, n_0 = 10**-5, epsilon = 10**-4,use_B=False)
+
+end_time_descent_noB = (time.time()) * 1000
+time_descent_noB = end_time_descent_noB - start_time_descent_noB
+print(time_descent_noB)
+'''
+
+'''
+Visualization
+'''
+
+import matplotlib.pyplot as plt
+fig,[ax1,ax2]=plt.subplots(2,1)
+[w_descent, MSE_descent, w_dif] = gradient_descent(X_3, Y, n_0 = 10**-5, epsilon = 10**-4,use_B=True)
+ax1.plot(MSE_descent)
+ax2.plot(w_dif)
+ax2.set_yscale("log")
+[w_descent, MSE_descent, w_dif] = gradient_descent(X_3, Y, n_0 = 10**-5, epsilon = 10**-4,use_B=False)
+ax1.plot(MSE_descent)
+ax2.plot(w_dif)
+ax2.legend(["Including B","Without B"])
+
+
