@@ -138,3 +138,4 @@ ax1.plot(MSE_descent)
 ax2.plot(w_dif)
 ax2.legend(["Including B","Without B"])
 
+
