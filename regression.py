@@ -25,10 +25,26 @@ import preprocessing as pp
 X_3 = pp.X_train[:,:4]
 X_63 = pp.X_train[:,:64]
 X_163 = pp.X_train[:,:164]
+X_164 = pp.X_train[:,:165]
+X_165 = pp.X_train[:,:166]
+
+X_64 = pp.X_train[:,:166]
+X_64 = np.delete(X_64, np.arange(64,165),1)
+
+X_65 = pp.X_train[:,:166]
+X_65 = np.delete(X_65, np.arange(64,164),1)
 
 X_valid_3 = pp.X_valid[:,:4]
 X_valid_63 = pp.X_valid[:,:64]
 X_valid_163 = pp.X_valid[:,:164]
+X_valid_164 = pp.X_valid[:,:165]
+X_valid_165 = pp.X_valid[:,:166]
+
+X_valid_64 = pp.X_valid[:,:166]
+X_valid_64 = np.delete(X_valid_64, np.arange(64,165),1)
+
+X_valid_65 = pp.X_valid[:,:166]
+X_valid_65 = np.delete(X_valid_65, np.arange(64,164),1)
 
 Y = pp.Y_train
 Y_valid = pp.Y_valid
@@ -42,6 +58,10 @@ def closed_form(X,Y):
 
 w_closed_63 = closed_form(X_63,Y)
 w_closed_163 = closed_form(X_163,Y)
+w_closed_164 = closed_form(X_164,Y)
+w_closed_165 = closed_form(X_165,Y)
+w_closed_65 = closed_form(X_65,Y)
+w_closed_64 = closed_form(X_64,Y)
 
 ###compute running time for features == 3
 start_time_closed = (time.time()) * 1000  
@@ -56,11 +76,19 @@ print(time_closed)
 MSE_closed_train_3=np.mean((Y-np.matmul(X_3, w_closed_3))**2)
 MSE_closed_train_63=np.mean((Y-np.matmul(X_63, w_closed_63))**2)
 MSE_closed_train_163=np.mean((Y-np.matmul(X_163, w_closed_163))**2)
+MSE_closed_train_164=np.mean((Y-np.matmul(X_164, w_closed_164))**2)
+MSE_closed_train_165=np.mean((Y-np.matmul(X_165, w_closed_165))**2)
+MSE_closed_train_65=np.mean((Y-np.matmul(X_65, w_closed_65))**2)
+MSE_closed_train_64=np.mean((Y-np.matmul(X_64, w_closed_64))**2)
 
 #compute mean squared error (MSE) on validation set
 MSE_closed_val_3=np.mean((Y_valid-np.matmul(X_valid_3, w_closed_3))**2)
 MSE_closed_val_63=np.mean((Y_valid-np.matmul(X_valid_63, w_closed_63))**2)
 MSE_closed_val_163=np.mean((Y_valid-np.matmul(X_valid_163, w_closed_163))**2)    
+MSE_closed_val_164=np.mean((Y_valid-np.matmul(X_valid_164, w_closed_164))**2)
+MSE_closed_val_165=np.mean((Y_valid-np.matmul(X_valid_165, w_closed_165))**2)
+MSE_closed_val_65=np.mean((Y_valid-np.matmul(X_valid_65, w_closed_65))**2)
+MSE_closed_val_64=np.mean((Y_valid-np.matmul(X_valid_64, w_closed_64))**2)
 
 ###LINEAR REGRESSION --- GRADIENT DESCENT
 def gradient_descent(X, Y, n_0 = 10**-5, epsilon = 10**-4, use_B=True):
@@ -137,5 +165,4 @@ ax2.set_yscale("log")
 ax1.plot(MSE_descent)
 ax2.plot(w_dif)
 ax2.legend(["Including B","Without B"])
-
 
