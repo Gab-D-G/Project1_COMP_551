@@ -92,8 +92,9 @@ for i in range(len(data)):
     sorted_data[i,3]= data_point['controversiality']
     sorted_data[i,4]= int(data_point['is_root']) 
     sorted_data[i,5:165]= count_top_words(comment,top_words)
-    sorted_data[i,165]= sorted_data[i,2] * capitalized_nb(comment)
-    sorted_data[i,166]= (2**sorted_data[i, 2]) * (sorted_data[i, 3])
+    sorted_data[i,165]= sorted_data[i,2] * length(comment)
+    sorted_data[i,166] = (sorted_data[i,2]+1)**(1+sorted_data[i,4])
+    #sorted_data[i,166]= (2**sorted_data[i, 2]) * (sorted_data[i, 3])
 
 #sorted_data[:,165]= (sorted_data[:,165] / (upper_cases + 1))
 

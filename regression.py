@@ -91,7 +91,10 @@ MSE_closed_val_165=np.mean((Y_valid-np.matmul(X_valid_165, w_closed_165))**2)
 MSE_closed_val_65=np.mean((Y_valid-np.matmul(X_valid_65, w_closed_65))**2)
 MSE_closed_val_64=np.mean((Y_valid-np.matmul(X_valid_64, w_closed_64))**2)
 
+gain_63 = MSE_closed_val_63 - MSE_closed_val_65
+gain_163 = MSE_closed_val_163 - MSE_closed_val_165
 
+'''
 ###LINEAR REGRESSION --- GRADIENT DESCENT
 def gradient_descent(X, Y, n_0 = 10**-5, epsilon = 10**-4, eval_MSE=True, B=1, verbose=False, max_iter=None):
     ###Initial weights
@@ -128,9 +131,9 @@ def gradient_descent(X, Y, n_0 = 10**-5, epsilon = 10**-4, eval_MSE=True, B=1, v
     #(COMMENT OUT LAST 2 OUTPUTS IF YOU WANT THE RUNNING TIME)
     return w_descent, np.asarray(MSE_descent), w_dif
 
-'''
-Influence of including the B parameter
-'''
+
+#Influence of including the B parameter
+
 X=X_3
 n_0=1e-5
 epsilon=1e-4
@@ -157,9 +160,9 @@ ax1.set_ylabel("Mean Square Error", fontsize=12)
 ax2.set_ylabel("L2 norm of weights", fontsize=12)
     
 
-'''
-Gradient-Descent performance across different learning rates
-'''
+
+#Gradient-Descent performance across different learning rates
+
 X=X_63
 X_valid=X_valid_63
 num_iter=10
@@ -194,9 +197,9 @@ ax1.set_yscale("log")
 ax1.set_xlabel("Number of iterations", fontsize=15)
 ax1.set_ylabel("Learning rate", fontsize=15)
 
-'''
-Gradient-Descent Run-Time
-'''
+
+#Gradient-Descent Run-Time
+
 
 start_time_descent_B = (time.time()) * 1000
 
@@ -210,9 +213,9 @@ time_descent_B = end_time_descent_B - start_time_descent_B
 print(time_descent_B)
 
 
-'''
-Evaluating stability
-'''
+
+#Evaluating stability
+
 
 #evaluate closed form stability
 weights=np.zeros([10,X_3.shape[1]])
@@ -228,9 +231,9 @@ for i in range(10):
     [weights[i,:],MSE_descent, w_dif] = gradient_descent(X_3[i*1000:(i+1)*1000,:],Y[i*1000:(i+1)*1000], n_0 = n_0, epsilon = epsilon, eval_MSE=True, B=B, verbose=False)
 gradient_stability=np.mean(np.std(weights,0))
 
-'''
-Gradient descent performance on 3 features
-'''
+
+#Gradient descent performance on 3 features
+
 X=X_163
 X_valid=X_valid_163
 n_0=1e-5
@@ -239,4 +242,4 @@ B=1/10
 [w_descent, MSE_descent, w_dif] = gradient_descent(X, Y, n_0 = n_0, epsilon = epsilon, eval_MSE=True, B=B, verbose=True)
 MSE_train=np.mean((Y-np.matmul(X, w_descent))**2)
 MSE_valid=np.mean((Y_valid-np.matmul(X_valid, w_descent))**2)
-
+'''
