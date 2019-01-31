@@ -10,24 +10,64 @@ Kevin Ma
 **MAKE SURE THAT ALL THE FILES FOR THE PROJECT ARE IN THE SAME DIRECTORY
 
 '''
+
+#load the data for this assignment from the json file
 import numpy as np
-import math
 import json
 with open("proj1_data.json") as fp:
     data = json.load(fp)
 
-word_count = {}
+'''
+Functions useful for our pre-processing:
+'''
 
-#functions that compute some extra features
-def length(string): #length of the comment
+#functions that tells whether a comment is spam or a bot
+def is_spam(string):
+    
+    words = string.split(" ")
+    
+    spam_words = []
+    with open('spam_words.txt','r') as f:
+        for line in f:
+            for word in line.split(", "):
+                spam_words.append(word)
+    
+    for word in words:
+        for spam_word in spam_words:
+            if word.startswith(spam_word):
+                return True           
+    return False
+
+#function that counts the number of "negative" words
+def count_negativity(string):
+    
+    negative_words = []
+    with open('negative_words.txt','r') as f:
+        for line in f:
+            for word in line.split(", "):
+                negative_words.append(word)
+    
+    words = string.split(" ")
+    
+    totalnb = 0
+    for word in words:
+        for negative_word in negative_words:
+            if word == negative_word:
+                totalnb += 1
+    return totalnb
+
+#functions that computes the length of the comment
+def length(string):
     words = string.split(" ")
     return len(words)
 
-def ave_word_length(string): #average length of the words in the comment
+#function that computes the average length of the words in the comment
+def ave_word_length(string):
     words = string.split(" ")
     return (len(string)/len(words))
 
-def capitalized_nb(string): #count number of capitalized word in the comment
+#function that counts the number of capitalized words in the comment
+def capitalized_nb(string):
     words = string.split(" ")
     count = 0
     for word in words:
@@ -36,7 +76,6 @@ def capitalized_nb(string): #count number of capitalized word in the comment
     return count
 
  #function that counts the occurence of the top 160 words in a string
-
 def count_top_words(string,top_words):
     words= string.split(" ")
     word_counts = np.zeros(len(top_words))
@@ -50,15 +89,13 @@ def count_top_words(string,top_words):
         i+=1
     return word_counts
 
-#MAIN
+'''MAIN'''
 
-#count nb of upper-case letters
-upper_cases = np.zeros((len(data)))
-for i in range(len(data)):
-    comment = data[i]['text']
-    upper_cases[i] = sum(1 for c in comment if c.isupper())
-
+'''
+COMPUTE THE LIST OF THE TOP 160 WORDS
+'''
 #count the occurence of each word in the first 10000 comments
+word_count = {}  #store results
 for i in range(10000):
     comment = data[i]['text']
     comment = comment.lower()
@@ -78,8 +115,11 @@ for i in range(160):
     top_words.append(word)
     word_count.pop(word)
     
-#build the dataset
-num_features= 160+5+2
+'''
+BUILD THE DATASET
+'''
+    
+num_features= 1+1+3+160+2   #popularity/intercept/3_main/text_features/extra_two
 sorted_data=np.zeros([len(data),num_features])
 for i in range(len(data)):
     
@@ -92,11 +132,20 @@ for i in range(len(data)):
     sorted_data[i,3]= data_point['controversiality']
     sorted_data[i,4]= int(data_point['is_root']) 
     sorted_data[i,5:165]= count_top_words(comment,top_words)
-    sorted_data[i,165]= sorted_data[i,2] * length(comment)
-    sorted_data[i,166] = (sorted_data[i,2]+1)**(1+sorted_data[i,4])
-    #sorted_data[i,166]= (2**sorted_data[i, 2]) * (sorted_data[i, 3])
+    
+    '''
+    EXTRA FEATURES
 
-#sorted_data[:,165]= (sorted_data[:,165] / (upper_cases + 1))
+        ***UN-COMMENT ANY FEATURE YOU WOULD LIKE TO TRY
+        
+        ***NOTE : the count_negativity() function is not
+        ***optimized and therefore take a ~5 minutes to run
+    '''
+
+    sorted_data[i,165] = (sorted_data[i,2]) * length(comment)
+    sorted_data[i,166] = (sorted_data[i,2])**(1 + sorted_data[i,4])
+    #sorted_data[i,165] = is_spam(comment)
+    #sorted_data[i,166] = count_negativity(comment)
 
 #training dataset    
 X_train=sorted_data[:10000,1:]
